@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -e
+
+BASE_DIR="/opt/bots"
+TEMPLATE_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+echo "Enter Bot Token:"
+read -r TOKEN
+echo "Enter Admin ID:"
+read -r ADMIN
+
+case "$TOKEN" in
+  *:*) ;;
+  *) echo "Token format wrong (must contain ':')."; exit 1;;
+esac
+
+# اسم مجلد فريد لكل بوت
+NAME="bot_${ADMIN}_$(date +%s)"
+DEST="${BASE_DIR}/${NAME}"
+
+sudo mkdir -p "$BASE_DIR"
+sudo cp -r "$TEMPLATE_DIR" "$DEST"
+
+# اكتب إعدادات هذا البوت
+sudo bash -lc "cat > '$DEST/config.py' <<EOF
+TOKEN = \"$TOKEN\"
+ADMIN = \"$ADMIN\"
+EOF"
+
+# تثبيت مرة واحدة
+sudo apt update -y
+sudo apt install -y python3 python3-pip screen
+python3 -m pip install --upgrade pip >/dev/null 2>&1 || true
+python3 -m pip install pyTelegramBotAPI >/dev/null
+
+# شغل هذا البوت بجلسة screen مستقلة
+SESSION="$NAME"
+sudo screen -dmS "$SESSION" bash -lc "cd '$DEST' && python3 sobot.py"
+
+echo "✅ Done"
+echo "Bot folder: $DEST"
+echo "Screen session: $SESSION"
+echo "List bots: screen -ls"
