@@ -1,0 +1,11 @@
+# لا ترفع أشياء حساسة أو غير مهمة
+.ssh/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.tmp
+*.swp
+*.sqlite3
+.env 
+
